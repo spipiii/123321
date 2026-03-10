@@ -4,9 +4,9 @@ from withdraw_check import get_transfer_network
 class MarketScanner:
 
     def __init__(self, loader, min_spread, fee_rate):
-        self.loader = loader
-        self.min_spread = min_spread
-        self.fee_rate = fee_rate
+            self.loader = loader
+            self.min_spread = min_spread
+            self.fee_rate = fee_rate
         """
         loader - объект, который содержит подключенные биржи в self.loader.exchanges
         engine - объект арбитражного движка, который ищет возможности
