@@ -1,7 +1,7 @@
 import asyncio
 from withdraw_check import get_transfer_network
 
-class Scanner:
+class MarketScanner:
 
     def __init__(self, loader, engine):
         """
