@@ -3,4 +3,4 @@ ccxt
 aiohttp
 pandas
 python-dotenv
-requestspy8688404030:AAHeM7LBRolyLFQvVWBk7DWE44LKT8KA4AA
+requests py8688404030:AAHeM7LBRolyLFQvVWBk7DWE44LKT8KA4AA
