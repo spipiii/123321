@@ -1,6 +1,5 @@
 import asyncio
 from withdraw_check import get_transfer_network
-from config import MIN_SPREAD, MIN_VOLUME_24H, MAX_VOLUME_24H
 
 class Scanner:
 
