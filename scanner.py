@@ -15,7 +15,6 @@ class MarketScanner:
         engine - объект арбитражного движка, который ищет возможности
         """
         self.loader = loader
-        self.engine = engine
 
     async def scan(self, df):
         """
