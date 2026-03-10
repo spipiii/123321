@@ -1,0 +1,5 @@
+
+ccxt
+aiohttp
+pandas
+python-dotenv
