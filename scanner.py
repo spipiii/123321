@@ -23,7 +23,7 @@ for exchange, markets in tickers.items():
 common_symbols = set.intersection(*symbol_sets)
 
 print(f"Common symbols across exchanges: {len(common_symbols)}")
-        symbols = {}
+symbols = {}
 
 # собираем цены по символам
 for exchange, markets in tickers.items():
