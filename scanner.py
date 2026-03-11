@@ -14,20 +14,25 @@ class MarketScanner:
 
         # получаем тикеры со всех бирж
         tickers = await self.loader.fetch_all_tickers()
+        # находим общие торговые пары между биржами
+symbol_sets = []
 
+for exchange, markets in tickers.items():
+    symbol_sets.append(set(markets.keys()))
+
+common_symbols = set.intersection(*symbol_sets)
+
+print(f"Common symbols across exchanges: {len(common_symbols)}")
         symbols = {}
 
-        # собираем цены по символам
-        for exchange, markets in tickers.items():
+# собираем цены по символам
+for exchange, markets in tickers.items():
 
-            for symbol, ticker in markets.items():
+    for symbol, ticker in markets.items():
+        if price is None: 
+            continue
 
-                price = ticker.get("last")
-
-                if price is None:
-                    continue
-
-                if symbol not in symbols:
+      if symbol not in symbols:
                     symbols[symbol] = []
 
                 symbols[symbol].append({
@@ -37,6 +42,10 @@ class MarketScanner:
 
         # ищем арбитраж
         for symbol, prices in symbols.items():
+
+            # пропускаем пары которые не на всех биржах
+            if symbol not in common_symbols:
+                continue
 
             if len(prices) < 2:
                 continue
