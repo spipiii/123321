@@ -30,9 +30,9 @@ for exchange, markets in tickers.items():
 
     for symbol, ticker in markets.items():
         if price is None: 
-            continue
+           continue
 
-      if symbol not in symbols:
+       if symbol not in symbols:
                     symbols[symbol] = []
 
                 symbols[symbol].append({
@@ -41,7 +41,7 @@ for exchange, markets in tickers.items():
                 })
 
         # ищем арбитраж
-        for symbol, prices in symbols.items():
+      for symbol, prices in symbols.items():
 
             # пропускаем пары которые не на всех биржах
             if symbol not in common_symbols:
