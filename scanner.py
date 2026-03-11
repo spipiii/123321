@@ -1,86 +1,73 @@
 import asyncio
-from withdraw_check import get_transfer_network
+
 
 class MarketScanner:
 
     def __init__(self, loader, min_spread, fee_rate):
-        """
-        Scanner for arbitrage
-        """
         self.loader = loader
         self.min_spread = min_spread
         self.fee_rate = fee_rate
-        """
-        loader - объект, который содержит подключенные биржи в self.loader.exchanges
-        engine - объект арбитражного движка, который ищет возможности
-        """
-        self.loader = loader
 
-    async def scan(self, df):
-        """
-        df - DataFrame с котировками или список монет
-        Возвращает отфильтрованный список возможностей
-        """
-        # находим все арбитражные возможности через движок
-        opportunities = self.engine.find(df)
+    async def scan(self):
 
-        filtered = []
+        opportunities = []
 
-        for op in opportunities:
+        # получаем тикеры со всех бирж
+        tickers = await self.loader.fetch_all_tickers()
 
-            # фильтр минимального спреда
-            if op["spread"] < MIN_SPREAD:
+        symbols = {}
+
+        # собираем цены по символам
+        for exchange, markets in tickers.items():
+
+            for symbol, ticker in markets.items():
+
+                price = ticker.get("last")
+
+                if price is None:
+                    continue
+
+                if symbol not in symbols:
+                    symbols[symbol] = []
+
+                symbols[symbol].append({
+                    "exchange": exchange,
+                    "price": price
+                })
+
+        # ищем арбитраж
+        for symbol, prices in symbols.items():
+
+            if len(prices) < 2:
                 continue
 
-            # фильтр объема за последние 24 часа
-            volume = op.get("quoteVolume", 0)
-            if volume < MIN_VOLUME_24H or volume > MAX_VOLUME_24H:
-                continue
+            for buy in prices:
+                for sell in prices:
 
-            # получаем объекты бирж
-            buy_ex = self.loader.exchanges.get(op["buy_exchange"])
-            sell_ex = self.loader.exchanges.get(op["sell_exchange"])
-            if not buy_ex or not sell_ex:
-                continue
+                    if buy["exchange"] == sell["exchange"]:
+                        continue
 
-            # проверяем возможность перевода между биржами
-            transfer = await get_transfer_network(
-                buy_ex,
-                sell_ex,
-                op["symbol"]
-            )
+                    buy_price = buy["price"]
+                    sell_price = sell["price"]
 
-            if not transfer:
-                continue
+                    spread = ((sell_price - buy_price) / buy_price) * 100
 
-            # добавляем данные о сети и комиссии в результат
-            op["network"] = transfer["network"]
-            op["withdraw_fee"] = transfer["fee"]
+                    # учитываем комиссии
+                    spread_after_fee = spread - (self.fee_rate * 2 * 100)
 
-            filtered.append(op)
+                    if spread_after_fee >= self.min_spread:
 
-        return filtered
+                        opportunities.append({
+                            "symbol": symbol,
+                            "buy_exchange": buy["exchange"],
+                            "buy_price": buy_price,
+                            "sell_exchange": sell["exchange"],
+                            "sell_price": sell_price,
+                            "spread": spread,
+                            "profit": spread_after_fee
+                        })
 
-    async def notify_opportunities(self, opportunities, notifier):
-        """
-        Форматирует и отправляет уведомления
-        notifier - объект для отправки сообщений (Telegram, Discord и т.д.)
-        """
-        for op in opportunities:
+        # сортировка по прибыли
+        opportunities.sort(key=lambda x: x["profit"], reverse=True)
 
-            message = f"""
-COIN: {op['symbol']}
-
-BUY: {op['buy_exchange']}
-PRICE: {op['buy_price']}
-
-SELL: {op['sell_exchange']}
-PRICE: {op['sell_price']}
-
-SPREAD: {op['spread']} %
-
-NETWORK: {op['network']}
-WITHDRAW FEE: {op['withdraw_fee']}
-"""
-
-            await notifier.send(message)
+        return opportunities
