@@ -1,3 +1,5 @@
+expand -t 4 scanner.py > fixed.py
+mv fixed.py scanner.py
 import asyncio
 from config import *
 from market_loader import MarketLoader
